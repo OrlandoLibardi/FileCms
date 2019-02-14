@@ -21,9 +21,12 @@ class FilesCmsServiceProvider extends ServiceProvider
         ->group(__DIR__. '/../../routes/web.php');
 
         //registrar as views
-        $this->loadViewsFrom( __DIR__.'/../../resources/views/admin/', 'viewFileCms');
+        $this->loadViewsFrom( __DIR__.'/../../resources/views/admin/files/', 'viewFileCms');
         
-
+        //publicar os arquivos
+        $this->publishes([
+            __DIR__.'/../../resources/views/admin/files/' => resource_path('views/admin/files'),
+        ],'adminFiles');
         
         
     }
