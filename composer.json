@@ -1,0 +1,28 @@
+{
+    "name": "orlandolibardi/filescms",
+    "description": "Interface visual para administração de arquivos do tipo imagens no OlCms!",
+    "type": "module",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Orlando Libardi",
+            "email": "orlando.libardi@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "orlandolibardi/admincms": "dev-master",
+    },
+    "autoload": {
+        "psr-4": {
+            "OrlandoLibardi\\FilesCms\\": "./"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "OrlandoLibardi\\FilesCms\\app\\Providers\\FilesCmsServiceProvider"
+            ]
+        }
+    }
+}
