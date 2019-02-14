@@ -15,7 +15,7 @@ class FilesCmsServiceProvider extends ServiceProvider
     public function boot()
     {
         //Rotas
-        Route::namespace('OrlandoLibardi\FilesCms\app\Http\Controllers\Admin')
+        Route::namespace('OrlandoLibardi\FilesCms\app\Http\Controllers')
         ->middleware(['web', 'auth'])
         ->prefix('admin')
         ->group(__DIR__. '/../../routes/web.php');
