@@ -25,7 +25,7 @@ class FilesCmsServiceProvider extends ServiceProvider
         
         //publicar os arquivos
         $this->publishes([
-            __DIR__.'/../../resources/views/admin/files/' => resource_path('views/admin/files'),
+            __DIR__.'/../../resources/views/admin/' => resource_path('views/admin/'),
         ],'adminFiles');
         
         
