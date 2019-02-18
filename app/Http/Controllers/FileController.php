@@ -16,7 +16,7 @@ class FileController extends Controller
     */
     public function index(Request $request)
     {
-        return view ( 'viewFileCms::index' );
+        return view ( 'admin.files.index' );
 
     }
 
