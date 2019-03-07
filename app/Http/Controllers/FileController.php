@@ -68,12 +68,12 @@ class FileController extends Controller
         'base_path' => 'required'] );
 
         if($validator->fails()) {
-            return response()->json(array( 'success' => false, 'message' => 'Os dados fornecidos são inválidos.', 'status'  =>  'error',  'errors'   =>  $validator->errors()->all() ), 422);
+            return response()->json(array( 'success' => false, 'message' => __('olcms::messages.request_error'), 'status'  =>  'error',  'errors'   =>  $validator->errors()->all() ), 422);
         }
 
         $directory = $request->base_path . "/" . $request->name;
         Storage::makeDirectory($directory);
-        return response()->json(array( 'message' => 'Criado com sucesso!', 'status'  =>  'success' ), 201);
+        return response()->json(array( 'message' => __('olcms::messages.create_success'), 'status'  =>  'success' ), 200);
     }
     /**
     * Store a newly created resource in storage.
@@ -88,7 +88,7 @@ class FileController extends Controller
         [ 'dir' => 'required',
         'file' => 'required'] );
         if($validator->fails()) {
-            return response()->json(array( 'success' => false, 'message' => 'Os dados fornecidos são inválidos.', 'status'  =>  'error',  'errors'   =>  $validator->errors()->all() ), 422);
+            return response()->json(array( 'success' => false, 'message' => __('olcms::messages.request_error'), 'status'  =>  'error',  'errors'   =>  $validator->errors()->all() ), 422);
         }
 
 
@@ -96,7 +96,7 @@ class FileController extends Controller
             $file->storeAs($request->dir, $file->getClientOriginalName());
         }
 
-        return response()->json(array( 'success' => false, 'message' => 'Chegamos aqui!', 'status'  =>  'error',  'errors'   =>  $request->all() ), 201);
+        return response()->json(array( 'success' => false, 'message' => __('olcms::messages.create_success'), 'status'  =>  'error',  'errors'   =>  $request->all() ), 201);
 
     }
 
@@ -109,7 +109,7 @@ class FileController extends Controller
 
         $files = Storage::files($directory);
         $directories = Storage::directories($directory);
-        $files = Storage::files($directory);
+        
         $dirs = [];
         $return = "";
         foreach($directories as $d){
@@ -119,7 +119,7 @@ class FileController extends Controller
             $return = $this->filesInfo($files);
         }
 
-        return response()->json(array( 'status'  =>  'success', 'message' => 'Load Concluído!', 'directories' => $dirs, 'files' => $return, 'directory' => $directory), 201);
+        return response()->json(array( 'status'  =>  'success', 'message' => __('olcms::messages.load_success'), 'directories' => $dirs, 'files' => $return, 'directory' => $directory), 201);
     }
 
 }
