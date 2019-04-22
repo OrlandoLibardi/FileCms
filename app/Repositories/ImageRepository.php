@@ -5,53 +5,55 @@ namespace OrlandoLibardi\FilesCms\app\Repositories;
 use Intervention\Image\ImageManagerStatic as Image;
 use Storage;
 use File;
-use Log;
+//use Log;
 
 class ImageRepository{
  
-    public function __construct(){
-        Log::info( "-- ImageRepository -- \n"  . PHP_EOL );
+    public function __construct()
+    {
+        //Log::info( "-- ImageRepository -- \n"  . PHP_EOL );
     }
-
-    public function teste(){
-        return "ola";
-    }
-
     /**
      * Salva e redimenciona uma imagem
      * @param $path, $image, array $size
      * @return string $image 
      */
 
-    public function saveImage($path, $image, $size){
-        
-        Log::info( "-- saveImage -- \n"  . PHP_EOL );
-
-        Log::info( "-- saveImage path: {$path} -- \n"  . PHP_EOL );
-        Log::info( "-- saveImage image: {$image} -- \n"  . PHP_EOL );
-
-        $temp = implode(",", $size);
-        Log::info( "-- saveImage size {$temp} -- \n"  . PHP_EOL );
-        
-
+    public function saveImage($path, $image, $size)
+    {
         $this->checkFolder($path);
-
         $name = $this->tempName($image);
-
         $image = $this->replaces($image);
-
         $this->save($image, $path, $name);
-
-        $this->imageResize($path, $name, $size);
-
+        $this->imageFit($path, $name, $size);
         return $name;
-
     }
-
-    public function replaces($image){
+    /**
+     * Replace relative for absulute patch
+     */
+    public function replaces($image)
+    {
         return str_replace("storage/", "public/", $image);
     }
-
+    /**
+    * replace absolute for relative patch 
+    */
+    public function setTemp($path)
+    {
+        $path = str_replace("public/", "storage/", $path);
+        $path = str_replace("/", "\\", $path);
+        return public_path( $path ); 
+    }
+    /**
+     * Redimenciona a imagem
+     * @param $path, $image, array $size
+     * @return void
+     */
+    public function imageFit($path, $image, $size)
+    {
+        $temp  = $this->setTemp($path) . "\\" . $image;        
+        Image::make($temp)->fit($size['width'], $size['height'])->save($temp);
+    }
     /**
      * Redimenciona a imagem
      * @param $path, $image, array $size
@@ -59,13 +61,35 @@ class ImageRepository{
      */
     public function imageResize($path, $image, $size)
     {
-        $path = str_replace("public/", "storage/", $path);
-        $path = str_replace("/", "\\", $path);
-        $temp  = public_path(  $path . "\\" . $image);        
-        Image::make($temp)->fit($size['width'], $size['height'])->save($temp);
-
+        $temp  = $this->setTemp($path) . "\\" . $image;        
+        Image::make($temp)->resize($size['width'], $size['height'])->save($temp);
     }
-
+    /**
+     * Crop
+     */
+    public function imageCrop($path, $image, $size)
+    {
+        $temp  = $this->setTemp($path) . "\\" . $image;        
+        Image::make($temp)->crop($size['width'], $size['height'], $size['x'], $size['y'])->save($temp);
+    }
+    /**
+     * Flip
+     * * h for horizontal or v for vertical 
+     */
+    public function imageFlip($path, $image, $direction)
+    {
+        $temp  = $this->setTemp($path) . "\\" . $image;        
+        Image::make($temp)->flip($direction)->save($temp);
+    }
+    /**
+     * Rotate
+     */
+    public function imageRotate($path, $image, $size)
+    {
+        $temp  = $this->setTemp($path) . "\\" . $image;
+        $rotate = $size['rotate'] <= 0 ? abs($size['rotate']) : -$size['rotate'];
+        Image::make($temp)->orientate()->rotate($rotate)->save($temp);
+    }    
     /**
      * Gera um nome único para o arquivo
      * @param $file
@@ -78,7 +102,6 @@ class ImageRepository{
         $ext = end($ext);
         return sha1($original_name . time() ) . "." .$ext;
     }
-
     /**
      * Salva a imagem ou arquivo
      */
@@ -86,31 +109,36 @@ class ImageRepository{
     {
         if(Storage::exists($file))
         {
-
             $this->delete($path, $alias);
-
             Storage::copy($file, $path . $alias);
-
             return "";
         }
 
         $file->storeAs($path, $alias);
     }
-
+    /**
+     * Copy image
+     */
+    public function cloneImage($image, $path, $new_image)
+    {
+        Storage::copy($path . $image, $path . $new_image);
+    }
     /**
      * Verifica se o diretório existe se não existir tentar cria-lo
      * @param $path
      */
     public function checkFolder($path)
     {
-        if(!Storage::exists($path)){
+        if(!Storage::exists($path))
+        {
             Storage::makeDirectory($path);
         }
     }
     /**
      * Path info
      */
-    public function pathInfo($path){
+    public function pathInfo($path)
+    {
         $p = array();
         $temp = explode("/",$path);
         $p['name'] = end($temp);
@@ -126,7 +154,8 @@ class ImageRepository{
         $return = [];
         foreach ($files as $f){
             $fp = pathinfo($f);
-            if(in_array(strtolower($fp['extension']), array("jpg", "jpeg", "gif", "png", "bmp"))){
+            if(in_array(strtolower($fp['extension']), array("jpg", "jpeg", "gif", "png", "bmp")))
+            {
                 $file = [];
                 $file['name'] = $fp['filename'];
                 $file['realname'] = $f;
@@ -134,30 +163,41 @@ class ImageRepository{
                 $file['extension'] = $fp['extension'];
                 $file['time'] = date('d/m/Y H:i:s', Storage::lastModified($f));
                 $file['size'] = Storage::size($f);
-
                 $return[] = $file;
             }
         }
-
         return $return;
-
     }
+    /**
+     * Rename File
+     */
     public function rename($path, $original_name, $final_name)
     {
-
-        if(substr_count($final_name, ".") == 0){
+        if(substr_count($final_name, ".") == 0)
+        {
             $ext = explode(".", $original_name);
             $ext = end($ext);
             $final_name = $final_name . "." . $ext;
         }
-
         $this->delete($path, $final_name);
-
         Storage::move($path . $original_name , $path . $final_name);
-
         return $final_name;
-
     }
+    /**
+     * Remove extension file
+     */
+    public function removeExtension($name)
+    {
+        if(substr_count($name, ".") > 0 )
+        {
+            $temp = explode(".", $name);
+            return $temp[0];
+        }
+        return $name;
+    }
+    /*
+    * Delete file
+    */
     public function delete($path, $file)
     {
         if(Storage::exists($path . $file))
@@ -165,4 +205,22 @@ class ImageRepository{
             Storage::delete($path . $file);
         }
     }
+    /**
+     * Rename folder
+     */
+    public function renameFolder($actual, $new)
+    {
+        Storage::move($actual, $new);
+    }          
+    /**
+    * Delete Folder
+    */  
+    public function deleteFolder($path)
+    {
+        if(Storage::exists($path))
+        {
+            Storage::deleteDirectory($path);
+        }
+    }
+
 }
