@@ -121,6 +121,8 @@ class ImageRepository{
      */
     public function cloneImage($image, $path, $new_image)
     {
+        $this->delete($path, $new_image);
+
         Storage::copy($path . $image, $path . $new_image);
     }
     /**
